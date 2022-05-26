@@ -1,0 +1,157 @@
+
+2022-05-19 05:50:56,227 INFO: errors [in C:\Users\Daniel\Desktop\GitHub\cd0046-SQL-and-Data-Modeling-for-the-Web\app.py:565]
+2022-05-19 05:51:04,155 ERROR: Exception on /venues/create [GET] [in C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py:1454]
+Traceback (most recent call last):
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\Daniel\Desktop\GitHub\cd0046-SQL-and-Data-Modeling-for-the-Web\app.py", line 231, in create_venue_form
+    form = VenueForm()
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\form.py", line 208, in __call__
+    return type.__call__(cls, *args, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\form.py", line 157, in __init__
+    super(Form, self).__init__(*args, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\form.py", line 87, in __init__
+    super(FlaskForm, self).__init__(formdata=formdata, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\form.py", line 286, in __init__
+    self.process(formdata, obj, data=data, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\form.py", line 127, in process
+    field.process(formdata, data, extra_filters=field_extra_filters)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\csrf\core.py", line 44, in process
+    self.current_token = self.csrf_impl.generate_csrf_token(self)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\csrf.py", line 139, in generate_csrf_token
+    return generate_csrf(
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\csrf.py", line 33, in generate_csrf
+    secret_key = _get_config(
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\csrf.py", line 128, in _get_config
+    raise RuntimeError(message)
+RuntimeError: A secret key is required to use CSRF.
+2022-05-19 05:51:07,274 ERROR: Exception on /venues/create [GET] [in C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py:1454]
+Traceback (most recent call last):
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\Daniel\Desktop\GitHub\cd0046-SQL-and-Data-Modeling-for-the-Web\app.py", line 231, in create_venue_form
+    form = VenueForm()
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\form.py", line 208, in __call__
+    return type.__call__(cls, *args, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\form.py", line 157, in __init__
+    super(Form, self).__init__(*args, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\form.py", line 87, in __init__
+    super(FlaskForm, self).__init__(formdata=formdata, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\form.py", line 286, in __init__
+    self.process(formdata, obj, data=data, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\form.py", line 127, in process
+    field.process(formdata, data, extra_filters=field_extra_filters)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\csrf\core.py", line 44, in process
+    self.current_token = self.csrf_impl.generate_csrf_token(self)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\csrf.py", line 139, in generate_csrf_token
+    return generate_csrf(
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\csrf.py", line 33, in generate_csrf
+    secret_key = _get_config(
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\csrf.py", line 128, in _get_config
+    raise RuntimeError(message)
+RuntimeError: A secret key is required to use CSRF.
+2022-05-19 05:51:17,434 ERROR: Exception on /venues/create [GET] [in C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py:1454]
+Traceback (most recent call last):
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\Daniel\Desktop\GitHub\cd0046-SQL-and-Data-Modeling-for-the-Web\app.py", line 231, in create_venue_form
+    form = VenueForm()
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\form.py", line 208, in __call__
+    return type.__call__(cls, *args, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\form.py", line 157, in __init__
+    super(Form, self).__init__(*args, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\form.py", line 87, in __init__
+    super(FlaskForm, self).__init__(formdata=formdata, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\form.py", line 286, in __init__
+    self.process(formdata, obj, data=data, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\form.py", line 127, in process
+    field.process(formdata, data, extra_filters=field_extra_filters)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\csrf\core.py", line 44, in process
+    self.current_token = self.csrf_impl.generate_csrf_token(self)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\csrf.py", line 139, in generate_csrf_token
+    return generate_csrf(
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\csrf.py", line 33, in generate_csrf
+    secret_key = _get_config(
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\csrf.py", line 128, in _get_config
+    raise RuntimeError(message)
+RuntimeError: A secret key is required to use CSRF.
+2022-05-19 05:51:34,335 ERROR: Exception on /venues/create [GET] [in C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py:1454]
+Traceback (most recent call last):
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\Daniel\Desktop\GitHub\cd0046-SQL-and-Data-Modeling-for-the-Web\app.py", line 231, in create_venue_form
+    form = VenueForm()
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\form.py", line 208, in __call__
+    return type.__call__(cls, *args, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\form.py", line 157, in __init__
+    super(Form, self).__init__(*args, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\form.py", line 87, in __init__
+    super(FlaskForm, self).__init__(formdata=formdata, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\form.py", line 286, in __init__
+    self.process(formdata, obj, data=data, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\form.py", line 127, in process
+    field.process(formdata, data, extra_filters=field_extra_filters)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\csrf\core.py", line 44, in process
+    self.current_token = self.csrf_impl.generate_csrf_token(self)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\csrf.py", line 139, in generate_csrf_token
+    return generate_csrf(
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\csrf.py", line 33, in generate_csrf
+    secret_key = _get_config(
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\csrf.py", line 128, in _get_config
+    raise RuntimeError(message)
+RuntimeError: A secret key is required to use CSRF.
+2022-05-19 05:51:37,646 ERROR: Exception on /venues/create [GET] [in C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py:1454]
+Traceback (most recent call last):
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask\app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+  File "C:\Users\Daniel\Desktop\GitHub\cd0046-SQL-and-Data-Modeling-for-the-Web\app.py", line 231, in create_venue_form
+    form = VenueForm()
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\form.py", line 208, in __call__
+    return type.__call__(cls, *args, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\form.py", line 157, in __init__
+    super(Form, self).__init__(*args, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\form.py", line 87, in __init__
+    super(FlaskForm, self).__init__(formdata=formdata, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\form.py", line 286, in __init__
+    self.process(formdata, obj, data=data, **kwargs)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\form.py", line 127, in process
+    field.process(formdata, data, extra_filters=field_extra_filters)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\wtforms\csrf\core.py", line 44, in process
+    self.current_token = self.csrf_impl.generate_csrf_token(self)
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\csrf.py", line 139, in generate_csrf_token
+    return generate_csrf(
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\csrf.py", line 33, in generate_csrf
+    secret_key = _get_config(
+  File "C:\Users\Daniel\AppData\Local\Programs\Python\Python39\lib\site-packages\flask_wtf\csrf.py", line 128, in _get_config
+    raise RuntimeError(message)
+RuntimeError: A secret key is required to use CSRF.
