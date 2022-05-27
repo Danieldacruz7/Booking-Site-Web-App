@@ -123,46 +123,70 @@ def venues():
   #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
   x = datetime.now()
 
-  venues = Venue.query.distinct(Venue.city).all()
+  venues = Venue.query.all()
+  #upcoming_shows = Venue.query.group_by('city').count()
   #venue_shows = Show.query.join(Venue)
-  print(venues, file=sys.stderr)
+  #(venues, file=sys.stderr)
+  #print(upcoming_shows, file=sys.stderr)
   #print(venue_shows, file=sys.stderr)
   
   #active_list = Artist.query.get(venue_id)
   #print(artists[2].name, file=sys.stderr)
   #print(active_list, file=sys.stderr)
   #data1 = []
-  """shows_data = Show.query.join(Venue).filter(Show.start_time > x).all()
-  print(shows_data, file=sys.stderr)
+  shows_data = Show.query.join(Venue).all()
+  #print(shows_data, file=sys.stderr)
   #data = [{"city": i.city, "state": i.state} for i in venues]
   data = []
-  
+  final_data = []
   for i in venues:
     new_dict = {}
-    
-    
     new_dict['city'] = i.city
     new_dict['state'] = i.state
-    data.append(new_dict)
+    if new_dict not in data: 
+      data.append(new_dict)
+
+  #print(data, file=sys.stderr)
   
   for i in data:
+    new_dict = {}
+    new_dict['city'] = i['city']
+    new_dict['state'] = i['state']
     
     print(i['city'], file=sys.stderr)
-    shows_data = Show.query.join(Venue).filter(Venue.city == i['city']).all()
+    shows_data = Show.query.join(Venue, Venue.venue_id == Show.venue_id).filter(Venue.city == i['city']).filter(Show.start_time > x).all()
+    #venues_data = Venue.query.join(Show, Venue.venue_id == Show.venue_id).filter(Show.venue_id == i['city']).filter(Show.start_time > x).all()
+    print("Show data {}".format(shows_data), file=sys.stderr)
     num_of_shows = len(shows_data)
+    #print(venues_data, file=sys.stderr)
     print(num_of_shows, file=sys.stderr)
     venues = []
-    for i in shows_data:
-      print(i, file=sys.stderr)
+    
+    for j in shows_data:
+      print("J {}".format(j), file=sys.stderr)
+      show = Venue.query.join(Show, Venue.venue_id == Show.venue_id).filter(Venue.venue_id == j.venue_id).filter(Show.start_time > x).one_or_none()
+      
+      num_of_shows = len(Show.query.join(Venue, Venue.venue_id == Show.venue_id).filter(Venue.venue_id == j.venue_id).filter(Show.start_time > x).all())
+      print("num_shows {}".format(num_of_shows), file=sys.stderr)
+        #venues_data = Venue.query.join(Show, Venue.venue_id == Show.venue_id).filter(Venue.venue_id == j.venue_id).filter(Show.start_time > x).one_or_none()
+        #print(venues_data, file=sys.stderr)
+      # print(j, file=sys.stderr)
+      # name = Venue.query.join(Show, Venue.venue_id == Show.venue_id).filter(Venue.name == i['name']).one_or_none()
       sec_dict = {}
-      sec_dict['id'] = i.venue_id
-      sec_dict['name'] = 
+      sec_dict['id'] = j.venue_id
+      sec_dict['name'] = show.name #venues_data['Venue']
       sec_dict['num_upcoming_shows'] = num_of_shows
       venues.append(sec_dict)
-    new_dict['venues'] = venues
-  """
+      new_dict['venues'] = venues
 
-  data=[{
+      if new_dict not in final_data:
+        final_data.append(new_dict)
+
+    
+
+  print(final_data, file=sys.stderr)
+
+  """data=[{
     "city": "San Francisco",
     "state": "CA",
     "venues": [{
@@ -182,9 +206,9 @@ def venues():
       "name": "The Dueling Pianos Bar",
     #  "num_upcoming_shows": 0,
     }]
-  }]
+  }]"""
   #return "Hello"
-  return render_template('pages/venues.html', areas=data);
+  return render_template('pages/venues.html', areas=final_data);
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
