@@ -108,28 +108,28 @@ app.jinja_env.filters['datetime'] = format_datetime
 #----------------------------------------------------------------------------#
 @app.route('/')
 def index():
+  """ Displays home page of web application. """
   return render_template('pages/home.html')
 
 #  Venues
 #  ----------------------------------------------------------------
 @app.route('/venues')
 def venues():
-  # TODO: replace with real venues data.
-  #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
+  """ Displays all venues within Fyyurdb database. """
   x = datetime.now()
-  venues = Venue.query.all()
+  venues = Venue.query.all() # Querying all venues in Venue table
   data = []
   final_data = []
 
-  for i in venues:
+  for i in venues: # Loops through venues city and state data 
     new_dict = {}
     new_dict['city'] = i.city
     new_dict['state'] = i.state
     if new_dict not in data: 
       data.append(new_dict)
 
-  for i in data:
-    new_dict = {}
+  for i in data: 
+    new_dict = {} # Creates new dictionary to hold city, state and shows data. 
     new_dict['city'] = i['city']
     new_dict['state'] = i['state']
     
@@ -139,7 +139,7 @@ def venues():
     venues = []
     
     for j in shows_data:
-      sec_dict = {}
+      sec_dict = {} # Second dictionary created to add all shows relevant to specified venue. 
       show = Venue.query.join(Show, Venue.venue_id == Show.venue_id).filter(Venue.venue_id == j.venue_id).one_or_none()
       num_of_shows = len(Show.query.join(Venue, Venue.venue_id == Show.venue_id).filter(Venue.venue_id == j.venue_id).filter(Show.start_time > x).all())
       
@@ -151,7 +151,7 @@ def venues():
       new_dict['venues'] = venues
 
       if new_dict not in final_data:
-        final_data.append(new_dict)
+        final_data.append(new_dict) # New entry is added to main list. Main list will be used to display the Venue data. 
 
   """data=[{
     "city": "San Francisco",
@@ -178,21 +178,19 @@ def venues():
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-  # seach for Hop should return "The Musical Hop".
-  # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
+  """ User will search for particular string within venues data. Function will return the results. """
   x = datetime.now()
-  search_term=request.form.get('search_term', '').lower()
-  venues = Venue.query.distinct().all()
+  search_term=request.form.get('search_term', '').lower() # Retrieve search term and set it to lower case. 
+  venues = Venue.query.distinct().all() # Return all unique venues 
   count = 0
   data = []
 
   for i in venues:
     if search_term in (i.name).lower():
-      new_dict = {}
+      new_dict = {} # Created dictionary to store venue_id, name and upcoming shows at venue. 
       new_dict['id'] = i.venue_id
       new_dict['name'] = i.name
-      new_dict['num_upcoming_shows'] = Artist.query.join(Show).where(Show.venue_id == i.venue_id).where(Show.start_time > x).count()
+      new_dict['num_upcoming_shows'] = Artist.query.join(Show).where(Show.venue_id == i.venue_id).where(Show.start_time > x).count() # Count the number of artists that have upcoming shows at the venue
       data.append(new_dict)
       count += 1 
 
@@ -204,15 +202,14 @@ def search_venues():
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
-  # shows the venue page with the given venue_id
-  # TODO: replace with real venue data from the venues table, using venue_id
+  """ Display venue data. All venue details including upcoming shows and past shows. """
   x = datetime.now()
   venues = Venue.query.distinct().all()
   count = 0
   venue_list = []
 
   for i in venues:
-    venue_dict = {}
+    venue_dict = {} # Dictionary created to store all venue data
     genres = i.genres[1:-1].split(",")
     venue_dict['id'] = i.venue_id
     venue_dict['genres'] = genres
@@ -227,23 +224,23 @@ def show_venue(venue_id):
     venue_dict['seeking_descriptions'] = i.seeking_descriptions
     venue_dict['image_link'] = i.image_link
 
-    past_show_shows = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time < x).order_by('start_time').all()
-    upcoming_show_shows = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time > x).order_by('start_time').all()
+    past_show_shows = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time < x).order_by('start_time').all() # Returns all past shows 
+    upcoming_show_shows = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time > x).order_by('start_time').all() # Returns all upcoming shows
  
     past_show = []
     past_dict = {}
     past_count = 0
 
     for j in past_show_shows:
-      past_dict = {}
-      artist = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.artist_id == j.artist_id).one_or_none()
+      past_dict = {} # Stores all relevant artist information including past shows
+      artist = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.artist_id == j.artist_id).one_or_none() # Returns one specified artist 
       past_dict['artist_id'] = artist.artist_id
       past_dict['artist_name'] = artist.name
       past_dict['artist_image_link'] = artist.image_link
       
       if len(past_show_shows) != 0:
         show_list = [i.start_time for i in past_show_shows]
-        past_dict['start_time'] = show_list[past_count].strftime('%Y-%m-%dT%H:%M:%SZ')
+        past_dict['start_time'] = show_list[past_count].strftime('%Y-%m-%dT%H:%M:%SZ') # Converts date and time to relevant format
       past_show.append(past_dict)
       past_count += 1
     
@@ -254,15 +251,15 @@ def show_venue(venue_id):
     upcoming_count = 0
 
     for j in upcoming_show_shows:
-      upcoming_dict = {}
-      artist = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.artist_id == j.artist_id).one_or_none()
+      upcoming_dict = {} # Stores all relevant artist information including upcoming shows
+      artist = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.artist_id == j.artist_id).one_or_none() # Returns one specified artist 
       upcoming_dict['artist_id'] = artist.artist_id
       upcoming_dict['artist_name'] = artist.name
       upcoming_dict['artist_image_link'] = artist.image_link
       
       if len(upcoming_show_shows) > 0:
         upcoming_show_list = [j.start_time for j in upcoming_show_shows]
-        upcoming_dict['start_time'] = upcoming_show_list[upcoming_count].strftime('%Y-%m-%dT%H:%M:%SZ')
+        upcoming_dict['start_time'] = upcoming_show_list[upcoming_count].strftime('%Y-%m-%dT%H:%M:%SZ') # Converts date and time to relevant format
       upcoming_count += 1
       
       upcoming_show.append(upcoming_dict)
@@ -360,12 +357,13 @@ def show_venue(venue_id):
 #  ----------------------------------------------------------------
 @app.route('/venues/create', methods=['GET'])
 def create_venue_form():
+  """ Displays form to capture Venue data. """
   form = VenueForm()
   return render_template('forms/new_venue.html', form=form)
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-  # TODO: insert form data as a new Venue record in the db, instead
+  """ Captures Venue data and commits the entry into the fyyurdb database. """
   form = VenueForm()
   error = False
   body = {}
@@ -376,8 +374,8 @@ def create_venue_submission():
                   image_link=form.image_link.data, website_link=form.website_link.data, seeking_talent=form.seeking_talent.data,
                   seeking_descriptions=form.seeking_description.data)
 
-    db.session.add(venue)
-    db.session.commit()
+    db.session.add(venue) # Add data to Database.
+    db.session.commit() # Make commitment to database. 
 
     flash('Venue ' + request.form['name'] + ' was successfully listed!')
   except:
@@ -399,6 +397,7 @@ def create_venue_submission():
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
+  """Deletes venue data according the venue ID. """
   # TODO: Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
   error = False
@@ -419,15 +418,13 @@ def delete_venue(venue_id):
   else:
       return jsonify({'success': True})
 
-  # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-  # clicking that button delete it from the db then redirect the user to the homepage
   return render_template('pages/home.html')
 
 #  Artists
 #  ----------------------------------------------------------------
 @app.route('/artists')
 def artists():
-  # TODO: replace with real data returned from querying the database
+  """ Dsiplays all artists within the Database. """
   artists = Artist.query.distinct().order_by('name').all()
 
   data = [{"id": artists[i].artist_id, "name": artists[i].name} for i in range(len(artists))]
@@ -450,13 +447,11 @@ def artists():
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-  # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
-  # search for "band" should return "The Wild Sax Band".
+  """ Returns all artist names that contain a user-defined string. """
   x = datetime.now()
 
   search_term=request.form.get('search_term', '').lower()
-  artists = Artist.query.distinct().all()
+  artists = Artist.query.distinct().all() # Returns all unique artist names. 
   count = 0
   data = []
 
@@ -477,8 +472,7 @@ def search_artists():
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
-  # shows the artist page with the given artist_id
-  # TODO: replace with real artist data from the artist table, using artist_id
+  """ Displays all data associated with a particular artist. """
   x = datetime.now()
   artists = Artist.query.distinct().all()
 
@@ -628,6 +622,7 @@ def show_artist(artist_id):
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
+  """ Displays the form for the artist data entry. """
   form = ArtistForm()
   artist_query = Artist.query.filter(Artist.artist_id == artist_id).one_or_none()
 
@@ -649,13 +644,11 @@ def edit_artist(artist_id):
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-  # TODO: take values from the form submitted, and update existing
-  # artist record with ID <artist_id> using the new attributes
+  """Captures all the artist data for entry into the fyyurdb database."""
   form = ArtistForm()
   error = False
 
   try:
-    
     artist_form = Artist(name=form.name.data, city=form.city.data, state=form.state.data,
                     phone=form.phone.data, genres=form.genres.data, facebook_link=form.facebook_link.data, 
                     image_link=form.image_link.data, website_link=form.website_link.data, seeking_venues=form.seeking_venue.data, 
@@ -663,6 +656,8 @@ def edit_artist_submission(artist_id):
 
     
     artist = Artist.query.get(artist_id)
+
+    # Updates if the field is not empty
     if artist_form.name != None:
       artist.name = artist_form.name
 
@@ -709,6 +704,7 @@ def edit_artist_submission(artist_id):
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
+  """ Displays the form for capturing venue data. """
   form = VenueForm()
   venue_query = Venue.query.filter(Venue.venue_id == venue_id).one_or_none()
 
@@ -745,13 +741,11 @@ def edit_venue(venue_id):
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
-  # TODO: take values from the form submitted, and update existing
-  # venue record with ID <venue_id> using the new attributes
+  """ Captures all venue data for entry into the fyyurdb database. """
   form = VenueForm()
   error = False
 
   try:
-    
     venue_form = Venue(name=form.name.data, city=form.city.data, state=form.state.data,
                   genres=form.genres.data, facebook_link=form.facebook_link.data, address=form.address.data, 
                   image_link=form.image_link.data, website_link=form.website_link.data, seeking_talent=form.seeking_talent.data,
@@ -759,6 +753,7 @@ def edit_venue_submission(venue_id):
 
     venue = Venue.query.get(venue_id)
 
+    # Updates the value if field is empty. 
     if venue_form.name != None:
       venue.name = venue_form.name
 
@@ -811,12 +806,13 @@ def edit_venue_submission(venue_id):
 
 @app.route('/artists/create', methods=['GET'])
 def create_artist_form():
+  """ Displays form for capturing artist data. """
   form = ArtistForm()
   return render_template('forms/new_artist.html', form=form)
 
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
-  # called upon submitting the new artist listing form
+  """ Captures all artist data for new entry into the fyyurdb database. """
   form = ArtistForm()
   error = False
   body = {}
@@ -846,9 +842,6 @@ def create_artist_submission():
   if error:
     abort(500)
 
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
-
   # on successful db insert, flash success
   #flash('Artist ' + request.form['name'] + ' was successfully listed!')
   # TODO: on unsuccessful db insert, flash an error instead.
@@ -861,8 +854,7 @@ def create_artist_submission():
 
 @app.route('/shows')
 def shows():
-  # displays list of shows at /shows
-  # TODO: replace with real venues data.
+  """ Displays all shows within the fyyurdb database. """
   x = datetime.now()
   shows = Show.query.join(Artist, Artist.artist_id == Show.artist_id).join(Venue, Venue.venue_id == Show.venue_id).order_by('start_time').all()
   count = 0
@@ -933,13 +925,14 @@ def shows():
 
 @app.route('/shows/create')
 def create_shows():
+  """ Displays form for show creation. """
   # renders form. do not touch.
   form = ShowForm()
   return render_template('forms/new_show.html', form=form)
 
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
-  # called to create new shows in the db, upon submitting new show listing form
+  """ Captures all show data for new entry into fyyurdb database. """
   form = ShowForm()
   count = len(Show.query.all())
   error = False
