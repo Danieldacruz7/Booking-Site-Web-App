@@ -52,10 +52,9 @@ class Venue(db.Model):
     website_link = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean, nullable=False, default=False)
     seeking_descriptions = db.Column(db.String(500))
-    
 
     def __repr__(self):
-        return f'<Todo ID: {self.venue_id}, name: {self.name}, city: {self.city}>'
+        return f'<Todo ID: {self.venue_id}, name: {self.name}, city: {self.city}, state: {self.state}, address: {self.address}, phone: {self.phone}, genres: {self.genres}, image_link: {self.image_link}>, facebook_link: {self.facebook_link}, website_link: {self.website_link}, seeking_talent: {self.seeking_talent}, seeking_descriptions: {self.seeking_descriptions}>'
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -75,7 +74,7 @@ class Artist(db.Model):
     seeking_descriptions = db.Column(db.String(500))
     
     def __repr__(self):
-        return f'ID: {self.artist_id}, name: {self.name}, city: {self.city}, state: {self.state}, phone: {self.phone}, genres: {self.genres}, image_link: {self.image_link}>, facebook_link: {self.facebook_link}'
+        return f'ID: {self.artist_id}, name: {self.name}, city: {self.city}, state: {self.state}, phone: {self.phone}, genres: {self.genres}, image_link: {self.image_link}>, facebook_link: {self.facebook_link}, website_link: {self.website_link}, seeking_venues: {self.seeking_venues}, seeking_descriptions: {self.seeking_descriptions}'
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -116,7 +115,6 @@ def index():
 
 #  Venues
 #  ----------------------------------------------------------------
-
 @app.route('/venues')
 def venues():
   # TODO: replace with real venues data.
@@ -134,7 +132,7 @@ def venues():
   #print(artists[2].name, file=sys.stderr)
   #print(active_list, file=sys.stderr)
   #data1 = []
-  shows_data = Show.query.join(Venue).all()
+  shows_data = Show.query.join(Venue).order_by('name').all()
   #print(shows_data, file=sys.stderr)
   #data = [{"city": i.city, "state": i.state} for i in venues]
   data = []
@@ -154,17 +152,18 @@ def venues():
     new_dict['state'] = i['state']
     
     print(i['city'], file=sys.stderr)
-    shows_data = Show.query.join(Venue, Venue.venue_id == Show.venue_id).filter(Venue.city == i['city']).filter(Show.start_time > x).all()
+    shows_data = Show.query.join(Venue, Venue.venue_id == Show.venue_id).filter(Venue.city == i['city']).order_by('name').all()
     #venues_data = Venue.query.join(Show, Venue.venue_id == Show.venue_id).filter(Show.venue_id == i['city']).filter(Show.start_time > x).all()
     print("Show data {}".format(shows_data), file=sys.stderr)
     num_of_shows = len(shows_data)
     #print(venues_data, file=sys.stderr)
     print(num_of_shows, file=sys.stderr)
+
     venues = []
     
     for j in shows_data:
       print("J {}".format(j), file=sys.stderr)
-      show = Venue.query.join(Show, Venue.venue_id == Show.venue_id).filter(Venue.venue_id == j.venue_id).filter(Show.start_time > x).one_or_none()
+      show = Venue.query.join(Show, Venue.venue_id == Show.venue_id).filter(Venue.venue_id == j.venue_id).one_or_none()
       
       num_of_shows = len(Show.query.join(Venue, Venue.venue_id == Show.venue_id).filter(Venue.venue_id == j.venue_id).filter(Show.start_time > x).all())
       print("num_shows {}".format(num_of_shows), file=sys.stderr)
@@ -176,13 +175,12 @@ def venues():
       sec_dict['id'] = j.venue_id
       sec_dict['name'] = show.name #venues_data['Venue']
       sec_dict['num_upcoming_shows'] = num_of_shows
-      venues.append(sec_dict)
+      if sec_dict not in venues:
+        venues.append(sec_dict)
       new_dict['venues'] = venues
 
       if new_dict not in final_data:
         final_data.append(new_dict)
-
-    
 
   print(final_data, file=sys.stderr)
 
@@ -250,20 +248,99 @@ def show_venue(venue_id):
   #venues = Venue.query.distinct().all()
   x = datetime.now()
 
-  past_shows_count = Show.query.where(Show.artist_id == venue_id).where(Show.start_time < x).count()
-  print(past_shows_count, file=sys.stderr)
-  upcoming_shows_count = Show.query.where(Show.artist_id == venue_id).where(Show.start_time > x).count()
-  print(upcoming_shows_count, file=sys.stderr)
-  upcoming_shows = Artist.query.join(Show).where(Show.artist_id == venue_id).where(Show.start_time > x).all()
-  print(upcoming_shows, file=sys.stderr)
+  venues = Venue.query.distinct().all()
+  
+  
+  #print(venues, file=sys.stderr)
+  venue_list = []
+  for i in venues:
+    venue_dict = {}
+    venue_dict['id'] = i.venue_id
+    venue_dict['genres'] = i.genres
+    venue_dict['name'] = i.name
+    venue_dict['address'] = i.address
+    venue_dict['city'] = i.city
+    venue_dict['state'] = i.state
+    venue_dict['phone'] = i.phone
+    venue_dict['website'] = i.website_link
+    venue_dict['facebook_link'] = i.facebook_link
+    venue_dict['seeking_talent'] = i.seeking_talent
+    venue_dict['seeking_descriptions'] = i.seeking_descriptions
+    venue_dict['image_link'] = i.image_link
+
+    past_artist_shows = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time < x).all()
+    past_show_shows = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time < x).all()
+    #number_of_past_shows = len(upcoming_shows)
+    #print(upcoming_shows, file=sys.stderr)
+
+    upcoming_artist_shows = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time > x).all()
+    upcoming_show_shows = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time > x).all()
+    number_of_upcoming_shows = len(upcoming_artist_shows)
+    #print(number_of_upcoming_shows, file=sys.stderr)
+    past_show = []
+    past_dict = {}
+    count = 0
+    for j in past_show_shows:
+      artist = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.artist_id == j.artist_id).one_or_none()
+      past_dict['artist_id'] = artist.artist_id
+      past_dict['artist_name'] = artist.name
+      past_dict['artist_image_link'] = artist.image_link
+      past_show_show = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.artist_id == j.artist_id).where(Show.start_time < x).all()
+      
+      if len(past_show_show) != 0:
+        show_list = [i.start_time for i in past_show_show]
+
+      print(show_list,  file=sys.stderr)
+      if len(show_list) != 0:
+        past_dict['start_time'] = show_list[count].strftime('%Y-%m-%dT%H:%M:%SZ')
+      count += 1
+      past_show.append(past_dict)
+    
+    venue_dict['past_shows'] = past_show
+    venue_dict['past_shows_count'] = len(past_show)
+    #print(venue_dict,  file=sys.stderr)
+    
+    upcoming_show = []
+    
+    count = 0
+    for j in upcoming_show_shows:
+      upcoming_dict = {}
+      artist = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.artist_id == j.artist_id).one_or_none()
+      upcoming_dict['artist_id'] = artist.artist_id
+      upcoming_dict['artist_name'] = artist.name
+      upcoming_dict['artist_image_link'] = artist.image_link
+      upcoming_show_show = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.artist_id == j.artist_id).where(Show.start_time > x).all()
+      print(upcoming_show_show, file=sys.stderr)
+      if len(upcoming_show_show) != 0:
+        upcoming_show_list = [j.start_time for j in upcoming_show_show]
+
+      print(upcoming_show_list,  file=sys.stderr)
+      if len(upcoming_show_list) != 0: #2019-06-15T23:00:00.000Z
+        upcoming_dict['start_time'] = upcoming_show_list[count].strftime('%Y-%m-%dT%H:%M:%SZ')
+      count += 1
+        
+      upcoming_show.append(upcoming_dict)
+    
+    venue_dict['upcoming_shows'] = upcoming_show
+    venue_dict['upcoming_shows_count'] = len(upcoming_show)
+
+    venue_list.append(venue_dict)
+  print(venue_list[0], file=sys.stderr)
+  #past_shows_count = Show.query.where(Show.artist_id == venue_id).where(Show.start_time < x).count()
+  #print(past_shows_count, file=sys.stderr)
+  #upcoming_shows_count = Show.query.where(Show.artist_id == venue_id).where(Show.start_time > x).count()
+  #print(upcoming_shows_count, file=sys.stderr)
+  #upcoming_shows = Artist.query.join(Show).where(Show.artist_id == venue_id).where(Show.start_time > x).all()
+  #print(upcoming_shows, file=sys.stderr)
   
   #active_list = Artist.query.get(venue_id)
   #print(artists[2].name, file=sys.stderr)
   #print(active_list, file=sys.stderr)
   #data1 = []
   #data = [{"city": venues[i].city, "state": venues[i].state} for i in range(len(venues))]
-  
-  data1={
+  data_list = []
+
+  """data1={
     "id": 1,
     "name": "The Musical Hop",
     "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
@@ -276,12 +353,14 @@ def show_venue(venue_id):
     "seeking_talent": True,
     "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
     "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
+    
     "past_shows": [{
       "artist_id": 1,
       "artist_name": "Guns N Petals",
       "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
       "start_time": "2019-05-21T21:30:00.000Z"
     }],
+
     "upcoming_shows": [],
     "past_shows_count": 1,
     "upcoming_shows_count": 0,
@@ -339,9 +418,13 @@ def show_venue(venue_id):
     }],
     "past_shows_count": 1,
     "upcoming_shows_count": 1,
-  }
-  data = list(filter(lambda d: d['id'] == venue_id, [data1, data2, data3]))[0]
+  }"""
+
+  #print(len(venue_list), file=sys.stderr)
+  
+  data = list(filter(lambda d: d['id'] == venue_id, venue_list))[0]
   return render_template('pages/show_venue.html', venue=data)
+  #return 'Hello'
 
 #  Create Venue
 #  ----------------------------------------------------------------
@@ -427,23 +510,23 @@ def delete_venue(venue_id):
 @app.route('/artists')
 def artists():
   # TODO: replace with real data returned from querying the database
-  artists = Artist.query.distinct().all()
+  artists = Artist.query.distinct().order_by('name').all()
   print(artists, file=sys.stderr)
   
-  #active_list = Artist.query.get(venue_id)
+  #active_list = Artist.query.get(artist_id)
   #print(artists[2].name, file=sys.stderr)
   #print(active_list, file=sys.stderr)
-  #data1 = []
-  #data = [{"id": artists[i].artist_id, "name": artists[i].name} for i in range(len(artists))]
-  #for i in range(len(artists)):
-    #print(artists[i].venue_id, file=sys.stderr)
-    #print(artists[i].name, file=sys.stderr)
-   # data1.append({"id": artists[i].venue_id, "name": artists[i].name})
-    #data1['id'] = artists[i].venue_id
-    #data1['name'] = artists[i].name
+  data1 = []
+  data = [{"id": artists[i].artist_id, "name": artists[i].name} for i in range(len(artists))]
+  """for i in range(len(artists)):
+    print(artists[i].artist_id , file=sys.stderr)
+    print(artists[i].name, file=sys.stderr)
+    data1.append({"id": artists[i].artist_id , "name": artists[i].name})
+    data1['id'] = artists[i].artist_id 
+    data1['name'] = artists[i].name"""
 
   #print(data, file=sys.stderr)
-  data=[{
+  """#data=[{
     "id": 1,
     "name": "Guns N Petals",
   }, {
@@ -456,7 +539,7 @@ def artists():
   "id": 3, 
   "name": "The Wild Sax Band"
   }
-  ]
+  ]"""
   #data = data1
   #print(len(data), file=sys.stderr)
   return render_template('pages/artists.html', artists=data)
@@ -497,10 +580,91 @@ def search_artists():
 def show_artist(artist_id):
   # shows the artist page with the given artist_id
   # TODO: replace with real artist data from the artist table, using artist_id
-  #artists = Artist.query.all()
-  #active_list = Artist.query.get(artist_id)
+  x = datetime.now()
+
+  artists = Artist.query.distinct().all()
+  print(artists, file=sys.stderr)
   
-  data1={
+  #print(venues, file=sys.stderr)
+  artist_list = []
+  for i in artists:
+    artist_dict = {}
+    artist_dict['id'] = i.artist_id
+    artist_dict['name'] = i.name
+    artist_dict['genres'] = i.genres
+    artist_dict['city'] = i.city
+    artist_dict['state'] = i.state
+    artist_dict['phone'] = i.phone
+    artist_dict['website'] = i.website_link
+    artist_dict['facebook_link'] = i.facebook_link
+    artist_dict['seeking_venues'] = i.seeking_venues
+    artist_dict['seeking_descriptions'] = i.seeking_descriptions
+    artist_dict['image_link'] = i.image_link
+
+    #past_artist_shows = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time < x).all()
+    past_show_shows = Show.query.join(Venue, Show.venue_id == Venue.venue_id).join(Artist, Artist.artist_id == Show.artist_id).where(Show.artist_id == i.artist_id).where(Show.start_time < x).all()
+    #number_of_past_shows = len(upcoming_shows)
+    print(past_show_shows, file=sys.stderr)
+
+    #upcoming_artist_shows = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time > x).all()
+    upcoming_show_shows = Show.query.join(Venue, Show.venue_id == Venue.venue_id).join(Artist, Artist.artist_id == Show.artist_id).where(Show.artist_id == i.artist_id).where(Show.start_time > x).all()
+    #upcoming_show_shows = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time > x).all()
+    #number_of_upcoming_shows = len(upcoming_artist_shows)
+    #print(number_of_upcoming_shows, file=sys.stderr)
+    past_show = []
+    
+    count = 0
+    for j in past_show_shows:
+      past_dict = {}
+      venue = Venue.query.join(Show, Show.venue_id == Venue.venue_id).where(Show.venue_id == j.venue_id).one_or_none()
+      past_dict['venue_id'] = venue.venue_id
+      past_dict['venue_name'] = venue.name
+      past_dict['venue_image_link'] = venue.image_link
+      past_show_show = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == j.venue_id).where(Show.artist_id == j.artist_id).where(Show.start_time < x).all()
+      
+      if len(past_show_show) != 0:
+        show_list = [i.start_time for i in past_show_show]
+
+      print(show_list,  file=sys.stderr)
+      if len(show_list) != 0:
+        past_dict['start_time'] = show_list[count].strftime('%Y-%m-%dT%H:%M:%SZ')
+      count += 1
+      past_show.append(past_dict)
+    
+    artist_dict['past_shows'] = past_show
+    artist_dict['past_shows_count'] = len(past_show)
+    #print(venue_dict,  file=sys.stderr)
+    #artist_list.append(artist_dict)
+    
+    upcoming_show = []
+    
+    count = 0
+    for j in upcoming_show_shows:
+      upcoming_dict = {}
+      venue = Venue.query.join(Show, Show.venue_id == Venue.venue_id).where(Show.venue_id == j.venue_id).one_or_none()
+      upcoming_dict['venue_id'] = venue.venue_id
+      upcoming_dict['venue_name'] = venue.name
+      upcoming_dict['venue_image_link'] = venue.image_link
+      upcoming_show_show = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == j.venue_id).where(Show.artist_id == j.artist_id).where(Show.start_time > x).all()
+      print(upcoming_show_show, file=sys.stderr)
+
+      if len(upcoming_show_show) != 0:
+        upcoming_show_list = [j.start_time for j in upcoming_show_show]
+
+      print(upcoming_show_list,  file=sys.stderr)
+      if len(upcoming_show_list) != 0: #2019-06-15T23:00:00.000Z
+        upcoming_dict['start_time'] = upcoming_show_list[count].strftime('%Y-%m-%dT%H:%M:%SZ')
+      count += 1
+        
+      upcoming_show.append(upcoming_dict)
+    
+    artist_dict['upcoming_shows'] = upcoming_show
+    artist_dict['upcoming_shows_count'] = len(upcoming_show)
+
+    artist_list.append(artist_dict)
+  
+  
+  """data1={
     "id": 1,
     "name": "Guns N Petals",
     "genres": ["Rock n Roll"],
@@ -512,12 +676,14 @@ def show_artist(artist_id):
     "seeking_venue": True,
     "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
     "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
+    
     "past_shows": [{
       "venue_id": 1,
       "venue_name": "The Musical Hop",
       "venue_image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
       "start_time": "2019-05-21T21:30:00.000Z"
     }],
+
     "upcoming_shows": [],
     "past_shows_count": 1,
     "upcoming_shows_count": 0,
@@ -570,10 +736,11 @@ def show_artist(artist_id):
     }],
     "past_shows_count": 0,
     "upcoming_shows_count": 3,
-  }
-  data = list(filter(lambda d: d['id'] == artist_id, [data1, data2, data3]))[0]
-  return render_template('pages/show_artist.html', artist=data)
+  }"""
 
+  data = list(filter(lambda d: d['id'] == artist_id, artist_list))[0]
+  return render_template('pages/show_artist.html', artist=data)
+  #return 'Hello'
 #  Update
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
@@ -605,19 +772,22 @@ def edit_artist(artist_id):
    #   abort(500)
   #else:
    # return redirect(url_for('index'))
-  artist={
-    "id": 4,
-    "name": "Guns N Petals",
-    "genres": ["Rock n Roll"],
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "326-123-5000",
-    "website": "https://www.gunsnpetalsband.com",
-    "facebook_link": "https://www.facebook.com/GunsNPetals",
-    "seeking_venue": True,
-    "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
-    "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
-  }
+
+  artist_query = Artist.query.filter(Artist.artist_id == artist_id).one_or_none()
+
+  artist = {}
+  artist['id'] = artist_query.artist_id   
+  artist['name'] = artist_query.name 
+  artist['genres'] = artist_query.genres 
+  artist['city'] = artist_query.city 
+  artist['state'] = artist_query.state 
+  artist['phone'] = artist_query.phone 
+  artist['website'] = artist_query.website_link
+  artist['facebook_link'] = artist_query.facebook_link 
+  artist['seeking_venue'] = artist_query.seeking_venues
+  artist['seeking_description'] = artist_query.seeking_descriptions
+  artist['image_link'] = artist_query.image_link 
+
   # TODO: populate form with fields from artist with ID <artist_id>
   return render_template('forms/edit_artist.html', form=form, artist=artist)
 
@@ -627,7 +797,8 @@ def edit_artist_submission(artist_id):
   # artist record with ID <artist_id> using the new attributes
   form = ArtistForm()
   error = False
-  print(form.data, file=sys.stderr)
+  #print(form.data, file=sys.stderr)
+  print("artist_id:{}".format(artist_id), file=sys.stderr)
   try:
     
     artist_form = Artist(name=form.name.data, city=form.city.data, state=form.state.data,
@@ -635,28 +806,50 @@ def edit_artist_submission(artist_id):
                     image_link=form.image_link.data, website_link=form.website_link.data, seeking_venues=form.seeking_venue.data, 
                     seeking_descriptions=form.seeking_description.data)
     print('Artist form created.', file=sys.stderr)
-    print(artist_form, file=sys.stderr)
+    #print(artist_form, file=sys.stderr)
     #print(type(artist_form), file=sys.stderr)
     
     #db.session.add(venue)
     #db.session.commit()
       #complete = request.get_json()['complete']
-    artist = Artist.query.get(1)
-    print(artist, file=sys.stderr)
-    for i in form.data:
-      if form.data[i] == '' or None:
-        #print(i, file=sys.stderr)
-        pass
-        #i = artist_form.i
-      else:
-        print(i, file=sys.stderr)
-        print(form.data[i], file=sys.stderr)
-        artist.i = form.data[i]
-        print('-----------', file=sys.stderr)
-        print(artist.i, file=sys.stderr)
-        print('-----------', file=sys.stderr)
-        db.session.commit()
-  except():
+    
+    artist = Artist.query.get(artist_id)
+    if artist_form.name != None:
+      artist.name = artist_form.name
+
+    if artist_form.city != None:
+      artist.city = artist_form.city
+
+    if artist_form.state != None:
+      artist.state = artist_form.state
+
+    if artist_form.phone != None:
+      artist.phone = artist_form.phone
+
+    if artist_form.genres != None:
+      artist.genres = artist_form.genres
+
+    if artist_form.facebook_link != None:
+      artist.facebook_link = artist_form.facebook_link
+
+    if artist_form.image_link != None:
+      artist.image_link = artist_form.image_link
+
+    if artist_form.website_link != None:
+      artist.website_link = artist_form.website_link
+
+    if artist_form.seeking_venues != None:
+      artist.seeking_venues = artist_form.seeking_venues
+
+    if artist_form.seeking_descriptions != None:
+      artist.seeking_descriptions = artist_form.seeking_descriptions
+
+    db.session.commit()
+        
+    flash("Updated user '{}'".format(artist.name))
+    #db.session.commit()
+        
+  except:
       db.session.rollback()
       error = True
       print(sys.exc_info())
@@ -667,14 +860,31 @@ def edit_artist_submission(artist_id):
   #else:
    # return redirect(url_for('index'))
   
-  return 'Done'
-  #return redirect(url_for('show_artist', artist_id=artist_id))
+  #return 'Done'
+  return redirect(url_for('show_artist', artist_id=artist_id))
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
   form = VenueForm()
   print(form, file=sys.stderr)
-  venue={
+  venue_query = Venue.query.filter(Venue.venue_id == venue_id).one_or_none()
+
+  venue = {}
+  venue['id'] = venue_query.venue_id   
+  venue['name'] = venue_query.name 
+  venue['genres'] = venue_query.genres
+  venue['address'] = venue_query.address 
+  venue['city'] = venue_query.city 
+  venue['state'] = venue_query.state 
+  venue['phone'] = venue_query.phone 
+  venue['website'] = venue_query.website_link
+  venue['facebook_link'] = venue_query.facebook_link 
+  venue['seeking_talent'] = venue_query.seeking_talent
+  venue['seeking_description'] = venue_query.seeking_descriptions
+  venue['image_link'] = venue_query.image_link 
+  print("Venue dictionary: {}".format(venue), file=sys.stderr)
+
+  """venue={
     "id": 1,
     "name": "The Musical Hop",
     "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
@@ -687,7 +897,7 @@ def edit_venue(venue_id):
     "seeking_talent": True,
     "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
     "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
-  }
+  }"""
   # TODO: populate form with values from venue with ID <venue_id>
   return render_template('forms/edit_venue.html', form=form, venue=venue)
 
@@ -705,36 +915,55 @@ def edit_venue_submission(venue_id):
                   image_link=form.image_link.data, website_link=form.website_link.data, seeking_talent=form.seeking_talent.data,
                   seeking_descriptions=form.seeking_description.data)
     print('Venue form created.', file=sys.stderr)
-    print(venue_form, file=sys.stderr)
-    #print(type(artist_form), file=sys.stderr)
+    venue = Venue.query.get(venue_id)
+
+    if venue_form.name != None:
+      venue.name = venue_form.name
+
+    if venue_form.city != None:
+      venue.city = venue_form.city
+
+    if venue_form.state != None:
+      venue.state = venue_form.state
+
+    if venue_form.address != None:
+      venue.address = venue_form.address
+
+    if venue_form.genres != None:
+      venue.genres = venue_form.genres
     
-    #db.session.add(venue)
+    if venue_form.phone != None:
+      venue.phone = venue_form.phone
+
+    if venue_form.facebook_link != None:
+      venue.facebook_link = venue_form.facebook_link
+
+    if venue_form.image_link != None:
+      venue.image_link = venue_form.image_link
+
+    if venue_form.website_link != None:
+      venue.website_link = venue_form.website_link
+
+    if venue_form.seeking_talent != None:
+      venue.seeking_talent = venue_form.seeking_talent
+
+    if venue_form.seeking_descriptions != None:
+      venue.seeking_descriptions = venue_form.seeking_descriptions
+
+    db.session.commit()
+        
+    flash("{} has been updated.'".format(venue.name))
     #db.session.commit()
-      #complete = request.get_json()['complete']
-    venue = Venue.query.get(1)
-    print(venue, file=sys.stderr)
-    for i in form.data:
-      if form.data[i] == '' or None:
-        #print(i, file=sys.stderr)
-        pass
-        #i = artist_form.i
-      else:
-        print(i, file=sys.stderr)
-        print(form.data[i], file=sys.stderr)
-        venue.i = form.data[i]
-        print('-----------', file=sys.stderr)
-        print(venue.i, file=sys.stderr)
-        print('-----------', file=sys.stderr)
-        db.session.commit()
+        
   except:
-    db.session.rollback()
-    error = True
-    print(sys.exc_info())
+      db.session.rollback()
+      error = True
+      print(sys.exc_info())
   finally:
-    db.session.close()
+      db.session.close()
   if error:
-    abort(500)
-  #return redirect(url_for('show_venue', venue_id=venue_id))
+      abort(500)
+  return redirect(url_for('show_venue', venue_id=venue_id))
 
 #  Create Artist
 #  ----------------------------------------------------------------
@@ -795,20 +1024,50 @@ def create_artist_submission():
 def shows():
   # displays list of shows at /shows
   # TODO: replace with real venues data.
-  shows = Show.query.where(Show.artist_id == 3).count()
+  x = datetime.now()
+
+  shows = Show.query.join(Artist, Artist.artist_id == Show.artist_id).join(Venue, Venue.venue_id == Show.venue_id).order_by('start_time').all()
   count = 0
   #for i in shows:
    # print(i, file=sys.stderr)
     #count += 1 
   #print(count, file=sys.stderr)
-  print(shows, file=sys.stderr)
+  #print(shows, file=sys.stderr)
+  data = []
+  for i in shows:
+    venue = Venue.query.filter(Venue.venue_id == i.venue_id).one_or_none()
+    artist = Artist.query.join(Show, Show.artist_id == Artist.artist_id).join(Venue, Venue.venue_id == Show.venue_id).filter(Show.artist_id == i.artist_id).one_or_none()
+    show_dict = {}
+    show_dict['venue_id'] = venue.venue_id
+    show_dict['venue_name'] = venue.name
+    show_dict['artist_id'] = artist.artist_id
+    show_dict['artist_name'] = artist.name
+    show_dict['artist_image_link'] = artist.image_link
+
+    upcoming_show_show = Show.query.where(i.venue_id == venue.venue_id).where(i.artist_id == artist.artist_id).where(i.start_time > x).all()
+    print(upcoming_show_show, file=sys.stderr)
+
+    if len(upcoming_show_show) != 0:
+      upcoming_show_list = [j.start_time for j in upcoming_show_show]
+      show_dict['start_time'] = upcoming_show_list[count].strftime("%Y-%m-%dT%H:%M:%SZ")
+    
+    past_show_show = Show.query.where(i.venue_id == venue.venue_id).where(i.artist_id == artist.artist_id).where(i.start_time < x).all()
+    #print(upcoming_show_show, file=sys.stderr)
+
+    if len(past_show_show) != 0:
+      past_show_list = [j.start_time for j in past_show_show]
+      show_dict['start_time'] = past_show_list[count].strftime("%Y-%m-%dT%H:%M:%SZ")
+      
+    data.append(show_dict)
+    count += 1
   
+  print(show_dict, file=sys.stderr)
   #active_list = Artist.query.get(venue_id)
   #print(artists[2].name, file=sys.stderr)
   #print(active_list, file=sys.stderr)
   #data1 = []
-  #data = [{"id": shows[i].show_id, "start_time": str(shows[i].start_time)} for i in range(len(shows))]
-  data=[{
+ #data = [{"id": shows[i].show_id, "start_time": str(shows[i].start_time)} for i in range(len(shows))]
+  """data=[{
     "venue_id": 1,
     "venue_name": "The Musical Hop",
     "artist_id": 1,
@@ -843,7 +1102,7 @@ def shows():
     "artist_name": "The Wild Sax Band",
     "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
     "start_time": "2035-04-15T20:00:00.000Z"
-  }]
+  }]"""
   return render_template('pages/shows.html', shows=data)
 
 @app.route('/shows/create')
