@@ -250,13 +250,21 @@ def show_venue(venue_id):
 
   venues = Venue.query.distinct().all()
   
+  count = 0
+  
+  
+  
   
   #print(venues, file=sys.stderr)
   venue_list = []
   for i in venues:
+    genres = i.genres[1:-1].split(",")
+    print(genres, file=sys.stderr)
+    #for j in genres:
+    #  print(j, file=sys.stderr)
     venue_dict = {}
     venue_dict['id'] = i.venue_id
-    venue_dict['genres'] = i.genres
+    venue_dict['genres'] = genres
     venue_dict['name'] = i.name
     venue_dict['address'] = i.address
     venue_dict['city'] = i.city
@@ -269,40 +277,40 @@ def show_venue(venue_id):
     venue_dict['image_link'] = i.image_link
 
     past_artist_shows = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time < x).all()
-    past_show_shows = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time < x).all()
+    past_show_shows = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time < x).order_by('start_time').all()
+    #past_show_shows = Show.query.join(Venue, Show.venue_id == Venue.venue_id).join(Artist, Artist.artist_id == Show.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time < x).order_by('start_time').all()
     #number_of_past_shows = len(upcoming_shows)
     #print(upcoming_shows, file=sys.stderr)
 
     upcoming_artist_shows = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time > x).all()
-    upcoming_show_shows = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time > x).all()
+    upcoming_show_shows = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time > x).order_by('start_time').all()
     number_of_upcoming_shows = len(upcoming_artist_shows)
     #print(number_of_upcoming_shows, file=sys.stderr)
     past_show = []
     past_dict = {}
-    count = 0
+    
+    past_count = 0
     for j in past_show_shows:
+      past_dict = {}
       artist = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.artist_id == j.artist_id).one_or_none()
       past_dict['artist_id'] = artist.artist_id
       past_dict['artist_name'] = artist.name
       past_dict['artist_image_link'] = artist.image_link
       past_show_show = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.artist_id == j.artist_id).where(Show.start_time < x).all()
       
-      if len(past_show_show) != 0:
-        show_list = [i.start_time for i in past_show_show]
-
-      print(show_list,  file=sys.stderr)
-      if len(show_list) != 0:
-        past_dict['start_time'] = show_list[count].strftime('%Y-%m-%dT%H:%M:%SZ')
-      count += 1
+      if len(past_show_shows) != 0:
+        show_list = [i.start_time for i in past_show_shows]
+        past_dict['start_time'] = show_list[past_count].strftime('%Y-%m-%dT%H:%M:%SZ')
       past_show.append(past_dict)
+      past_count += 1
     
     venue_dict['past_shows'] = past_show
     venue_dict['past_shows_count'] = len(past_show)
+    
     #print(venue_dict,  file=sys.stderr)
     
     upcoming_show = []
-    
-    count = 0
+    upcoming_count = 0
     for j in upcoming_show_shows:
       upcoming_dict = {}
       artist = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.artist_id == j.artist_id).one_or_none()
@@ -310,21 +318,23 @@ def show_venue(venue_id):
       upcoming_dict['artist_name'] = artist.name
       upcoming_dict['artist_image_link'] = artist.image_link
       upcoming_show_show = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.artist_id == j.artist_id).where(Show.start_time > x).all()
-      print(upcoming_show_show, file=sys.stderr)
-      if len(upcoming_show_show) != 0:
-        upcoming_show_list = [j.start_time for j in upcoming_show_show]
-
-      print(upcoming_show_list,  file=sys.stderr)
-      if len(upcoming_show_list) != 0: #2019-06-15T23:00:00.000Z
-        upcoming_dict['start_time'] = upcoming_show_list[count].strftime('%Y-%m-%dT%H:%M:%SZ')
-      count += 1
-        
+      print("Upcoming {}".format(len(upcoming_show_shows)), file=sys.stderr)
+      
+      if len(upcoming_show_shows) > 0:
+        upcoming_show_list = [j.start_time for j in upcoming_show_shows]
+        print("Upcoming length {}".format(len(upcoming_show_list)), file=sys.stderr)
+        print("Count {}".format(upcoming_count), file=sys.stderr)
+        upcoming_dict['start_time'] = upcoming_show_list[upcoming_count].strftime('%Y-%m-%dT%H:%M:%SZ')
+      upcoming_count += 1
+      
       upcoming_show.append(upcoming_dict)
     
     venue_dict['upcoming_shows'] = upcoming_show
     venue_dict['upcoming_shows_count'] = len(upcoming_show)
+    
 
     venue_list.append(venue_dict)
+    count += 1
   print(venue_list[0], file=sys.stderr)
   #past_shows_count = Show.query.where(Show.artist_id == venue_id).where(Show.start_time < x).count()
   #print(past_shows_count, file=sys.stderr)
@@ -589,9 +599,10 @@ def show_artist(artist_id):
   artist_list = []
   for i in artists:
     artist_dict = {}
+    genres = i.genres[1:-1].split(",")
     artist_dict['id'] = i.artist_id
     artist_dict['name'] = i.name
-    artist_dict['genres'] = i.genres
+    artist_dict['genres'] = genres
     artist_dict['city'] = i.city
     artist_dict['state'] = i.state
     artist_dict['phone'] = i.phone
@@ -602,18 +613,18 @@ def show_artist(artist_id):
     artist_dict['image_link'] = i.image_link
 
     #past_artist_shows = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time < x).all()
-    past_show_shows = Show.query.join(Venue, Show.venue_id == Venue.venue_id).join(Artist, Artist.artist_id == Show.artist_id).where(Show.artist_id == i.artist_id).where(Show.start_time < x).all()
+    past_show_shows = Show.query.join(Venue, Show.venue_id == Venue.venue_id).join(Artist, Artist.artist_id == Show.artist_id).where(Show.artist_id == i.artist_id).where(Show.start_time < x).order_by('start_time').all()
     #number_of_past_shows = len(upcoming_shows)
     print(past_show_shows, file=sys.stderr)
 
     #upcoming_artist_shows = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time > x).all()
-    upcoming_show_shows = Show.query.join(Venue, Show.venue_id == Venue.venue_id).join(Artist, Artist.artist_id == Show.artist_id).where(Show.artist_id == i.artist_id).where(Show.start_time > x).all()
+    upcoming_show_shows = Show.query.join(Venue, Show.venue_id == Venue.venue_id).join(Artist, Artist.artist_id == Show.artist_id).where(Show.artist_id == i.artist_id).where(Show.start_time > x).order_by('start_time').all()
     #upcoming_show_shows = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time > x).all()
     #number_of_upcoming_shows = len(upcoming_artist_shows)
     #print(number_of_upcoming_shows, file=sys.stderr)
     past_show = []
     
-    count = 0
+    past_count = 0
     for j in past_show_shows:
       past_dict = {}
       venue = Venue.query.join(Show, Show.venue_id == Venue.venue_id).where(Show.venue_id == j.venue_id).one_or_none()
@@ -622,13 +633,13 @@ def show_artist(artist_id):
       past_dict['venue_image_link'] = venue.image_link
       past_show_show = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == j.venue_id).where(Show.artist_id == j.artist_id).where(Show.start_time < x).all()
       
-      if len(past_show_show) != 0:
-        show_list = [i.start_time for i in past_show_show]
+      if len(past_show_shows) != 0:
+        show_list = [i.start_time for i in past_show_shows]
 
       print(show_list,  file=sys.stderr)
       if len(show_list) != 0:
-        past_dict['start_time'] = show_list[count].strftime('%Y-%m-%dT%H:%M:%SZ')
-      count += 1
+        past_dict['start_time'] = show_list[past_count].strftime('%Y-%m-%dT%H:%M:%SZ')
+      past_count += 1
       past_show.append(past_dict)
     
     artist_dict['past_shows'] = past_show
@@ -638,7 +649,7 @@ def show_artist(artist_id):
     
     upcoming_show = []
     
-    count = 0
+    upcoming_count = 0
     for j in upcoming_show_shows:
       upcoming_dict = {}
       venue = Venue.query.join(Show, Show.venue_id == Venue.venue_id).where(Show.venue_id == j.venue_id).one_or_none()
@@ -648,13 +659,13 @@ def show_artist(artist_id):
       upcoming_show_show = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == j.venue_id).where(Show.artist_id == j.artist_id).where(Show.start_time > x).all()
       print(upcoming_show_show, file=sys.stderr)
 
-      if len(upcoming_show_show) != 0:
-        upcoming_show_list = [j.start_time for j in upcoming_show_show]
+      if len(upcoming_show_shows) != 0:
+        upcoming_show_list = [j.start_time for j in upcoming_show_shows]
 
       print(upcoming_show_list,  file=sys.stderr)
       if len(upcoming_show_list) != 0: #2019-06-15T23:00:00.000Z
-        upcoming_dict['start_time'] = upcoming_show_list[count].strftime('%Y-%m-%dT%H:%M:%SZ')
-      count += 1
+        upcoming_dict['start_time'] = upcoming_show_list[upcoming_count].strftime('%Y-%m-%dT%H:%M:%SZ')
+      upcoming_count += 1
         
       upcoming_show.append(upcoming_dict)
     
@@ -1044,14 +1055,14 @@ def shows():
     show_dict['artist_name'] = artist.name
     show_dict['artist_image_link'] = artist.image_link
 
-    upcoming_show_show = Show.query.where(i.venue_id == venue.venue_id).where(i.artist_id == artist.artist_id).where(i.start_time > x).all()
+    upcoming_show_show = Show.query.where(i.venue_id == venue.venue_id).where(i.artist_id == artist.artist_id).where(i.start_time > x).order_by('start_time').all()
     print(upcoming_show_show, file=sys.stderr)
 
     if len(upcoming_show_show) != 0:
       upcoming_show_list = [j.start_time for j in upcoming_show_show]
       show_dict['start_time'] = upcoming_show_list[count].strftime("%Y-%m-%dT%H:%M:%SZ")
     
-    past_show_show = Show.query.where(i.venue_id == venue.venue_id).where(i.artist_id == artist.artist_id).where(i.start_time < x).all()
+    past_show_show = Show.query.where(i.venue_id == venue.venue_id).where(i.artist_id == artist.artist_id).where(i.start_time < x).order_by('start_time').all()
     #print(upcoming_show_show, file=sys.stderr)
 
     if len(past_show_show) != 0:
