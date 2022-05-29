@@ -4,7 +4,6 @@
 
 import sys #
 from datetime import datetime
-import json
 import dateutil.parser
 import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for, abort, jsonify
@@ -94,7 +93,6 @@ class Show(db.Model):
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
-
 def format_datetime(value, format='medium'):
   date = dateutil.parser.parse(value)
   if format == 'full':
@@ -108,7 +106,6 @@ app.jinja_env.filters['datetime'] = format_datetime
 #----------------------------------------------------------------------------#
 # Controllers.
 #----------------------------------------------------------------------------#
-
 @app.route('/')
 def index():
   return render_template('pages/home.html')
@@ -120,23 +117,10 @@ def venues():
   # TODO: replace with real venues data.
   #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
   x = datetime.now()
-
   venues = Venue.query.all()
-  #upcoming_shows = Venue.query.group_by('city').count()
-  #venue_shows = Show.query.join(Venue)
-  #(venues, file=sys.stderr)
-  #print(upcoming_shows, file=sys.stderr)
-  #print(venue_shows, file=sys.stderr)
-  
-  #active_list = Artist.query.get(venue_id)
-  #print(artists[2].name, file=sys.stderr)
-  #print(active_list, file=sys.stderr)
-  #data1 = []
-  shows_data = Show.query.join(Venue).order_by('name').all()
-  #print(shows_data, file=sys.stderr)
-  #data = [{"city": i.city, "state": i.state} for i in venues]
   data = []
   final_data = []
+
   for i in venues:
     new_dict = {}
     new_dict['city'] = i.city
@@ -144,36 +128,23 @@ def venues():
     if new_dict not in data: 
       data.append(new_dict)
 
-  #print(data, file=sys.stderr)
-  
   for i in data:
     new_dict = {}
     new_dict['city'] = i['city']
     new_dict['state'] = i['state']
     
-    print(i['city'], file=sys.stderr)
     shows_data = Show.query.join(Venue, Venue.venue_id == Show.venue_id).filter(Venue.city == i['city']).order_by('name').all()
-    #venues_data = Venue.query.join(Show, Venue.venue_id == Show.venue_id).filter(Show.venue_id == i['city']).filter(Show.start_time > x).all()
-    print("Show data {}".format(shows_data), file=sys.stderr)
     num_of_shows = len(shows_data)
-    #print(venues_data, file=sys.stderr)
-    print(num_of_shows, file=sys.stderr)
 
     venues = []
     
     for j in shows_data:
-      print("J {}".format(j), file=sys.stderr)
-      show = Venue.query.join(Show, Venue.venue_id == Show.venue_id).filter(Venue.venue_id == j.venue_id).one_or_none()
-      
-      num_of_shows = len(Show.query.join(Venue, Venue.venue_id == Show.venue_id).filter(Venue.venue_id == j.venue_id).filter(Show.start_time > x).all())
-      print("num_shows {}".format(num_of_shows), file=sys.stderr)
-        #venues_data = Venue.query.join(Show, Venue.venue_id == Show.venue_id).filter(Venue.venue_id == j.venue_id).filter(Show.start_time > x).one_or_none()
-        #print(venues_data, file=sys.stderr)
-      # print(j, file=sys.stderr)
-      # name = Venue.query.join(Show, Venue.venue_id == Show.venue_id).filter(Venue.name == i['name']).one_or_none()
       sec_dict = {}
+      show = Venue.query.join(Show, Venue.venue_id == Show.venue_id).filter(Venue.venue_id == j.venue_id).one_or_none()
+      num_of_shows = len(Show.query.join(Venue, Venue.venue_id == Show.venue_id).filter(Venue.venue_id == j.venue_id).filter(Show.start_time > x).all())
+      
       sec_dict['id'] = j.venue_id
-      sec_dict['name'] = show.name #venues_data['Venue']
+      sec_dict['name'] = show.name
       sec_dict['num_upcoming_shows'] = num_of_shows
       if sec_dict not in venues:
         venues.append(sec_dict)
@@ -181,8 +152,6 @@ def venues():
 
       if new_dict not in final_data:
         final_data.append(new_dict)
-
-  print(final_data, file=sys.stderr)
 
   """data=[{
     "city": "San Francisco",
@@ -205,7 +174,6 @@ def venues():
     #  "num_upcoming_shows": 0,
     }]
   }]"""
-  #return "Hello"
   return render_template('pages/venues.html', areas=final_data);
 
 @app.route('/venues/search', methods=['POST'])
@@ -214,55 +182,38 @@ def search_venues():
   # seach for Hop should return "The Musical Hop".
   # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
   x = datetime.now()
-
   search_term=request.form.get('search_term', '').lower()
-  print(search_term, file=sys.stderr)
   venues = Venue.query.distinct().all()
-  print(venues[0], file=sys.stderr)
   count = 0
   data = []
+
   for i in venues:
     if search_term in (i.name).lower():
       new_dict = {}
-      print(i.name, file=sys.stderr)
-      print(i.venue_id, file=sys.stderr)
       new_dict['id'] = i.venue_id
       new_dict['name'] = i.name
       new_dict['num_upcoming_shows'] = Artist.query.join(Show).where(Show.venue_id == i.venue_id).where(Show.start_time > x).count()
       data.append(new_dict)
-      #upcoming_shows = Artist.query.join(Show).where(Show.artist_id == i.artist_id).where(Show.start_time > x).all()
       count += 1 
-  #print(upcoming_shows, file=sys.stderr)
-  #print(data, file=sys.stderr)
+
   response={
     "count": count,
     "data": data
   }
-
   return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
   # shows the venue page with the given venue_id
   # TODO: replace with real venue data from the venues table, using venue_id
-  #venues = Venue.query.distinct().all()
   x = datetime.now()
-
   venues = Venue.query.distinct().all()
-  
   count = 0
-  
-  
-  
-  
-  #print(venues, file=sys.stderr)
   venue_list = []
+
   for i in venues:
-    genres = i.genres[1:-1].split(",")
-    print(genres, file=sys.stderr)
-    #for j in genres:
-    #  print(j, file=sys.stderr)
     venue_dict = {}
+    genres = i.genres[1:-1].split(",")
     venue_dict['id'] = i.venue_id
     venue_dict['genres'] = genres
     venue_dict['name'] = i.name
@@ -276,27 +227,19 @@ def show_venue(venue_id):
     venue_dict['seeking_descriptions'] = i.seeking_descriptions
     venue_dict['image_link'] = i.image_link
 
-    past_artist_shows = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time < x).all()
     past_show_shows = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time < x).order_by('start_time').all()
-    #past_show_shows = Show.query.join(Venue, Show.venue_id == Venue.venue_id).join(Artist, Artist.artist_id == Show.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time < x).order_by('start_time').all()
-    #number_of_past_shows = len(upcoming_shows)
-    #print(upcoming_shows, file=sys.stderr)
-
-    upcoming_artist_shows = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time > x).all()
     upcoming_show_shows = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time > x).order_by('start_time').all()
-    number_of_upcoming_shows = len(upcoming_artist_shows)
-    #print(number_of_upcoming_shows, file=sys.stderr)
+ 
     past_show = []
     past_dict = {}
-    
     past_count = 0
+
     for j in past_show_shows:
       past_dict = {}
       artist = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.artist_id == j.artist_id).one_or_none()
       past_dict['artist_id'] = artist.artist_id
       past_dict['artist_name'] = artist.name
       past_dict['artist_image_link'] = artist.image_link
-      past_show_show = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.artist_id == j.artist_id).where(Show.start_time < x).all()
       
       if len(past_show_shows) != 0:
         show_list = [i.start_time for i in past_show_shows]
@@ -307,23 +250,18 @@ def show_venue(venue_id):
     venue_dict['past_shows'] = past_show
     venue_dict['past_shows_count'] = len(past_show)
     
-    #print(venue_dict,  file=sys.stderr)
-    
     upcoming_show = []
     upcoming_count = 0
+
     for j in upcoming_show_shows:
       upcoming_dict = {}
       artist = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.artist_id == j.artist_id).one_or_none()
       upcoming_dict['artist_id'] = artist.artist_id
       upcoming_dict['artist_name'] = artist.name
       upcoming_dict['artist_image_link'] = artist.image_link
-      upcoming_show_show = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.artist_id == j.artist_id).where(Show.start_time > x).all()
-      print("Upcoming {}".format(len(upcoming_show_shows)), file=sys.stderr)
       
       if len(upcoming_show_shows) > 0:
         upcoming_show_list = [j.start_time for j in upcoming_show_shows]
-        print("Upcoming length {}".format(len(upcoming_show_list)), file=sys.stderr)
-        print("Count {}".format(upcoming_count), file=sys.stderr)
         upcoming_dict['start_time'] = upcoming_show_list[upcoming_count].strftime('%Y-%m-%dT%H:%M:%SZ')
       upcoming_count += 1
       
@@ -335,20 +273,6 @@ def show_venue(venue_id):
 
     venue_list.append(venue_dict)
     count += 1
-  print(venue_list[0], file=sys.stderr)
-  #past_shows_count = Show.query.where(Show.artist_id == venue_id).where(Show.start_time < x).count()
-  #print(past_shows_count, file=sys.stderr)
-  #upcoming_shows_count = Show.query.where(Show.artist_id == venue_id).where(Show.start_time > x).count()
-  #print(upcoming_shows_count, file=sys.stderr)
-  #upcoming_shows = Artist.query.join(Show).where(Show.artist_id == venue_id).where(Show.start_time > x).all()
-  #print(upcoming_shows, file=sys.stderr)
-  
-  #active_list = Artist.query.get(venue_id)
-  #print(artists[2].name, file=sys.stderr)
-  #print(active_list, file=sys.stderr)
-  #data1 = []
-  #data = [{"city": venues[i].city, "state": venues[i].state} for i in range(len(venues))]
-  data_list = []
 
   """data1={
     "id": 1,
@@ -429,16 +353,11 @@ def show_venue(venue_id):
     "past_shows_count": 1,
     "upcoming_shows_count": 1,
   }"""
-
-  #print(len(venue_list), file=sys.stderr)
-  
   data = list(filter(lambda d: d['id'] == venue_id, venue_list))[0]
   return render_template('pages/show_venue.html', venue=data)
-  #return 'Hello'
 
 #  Create Venue
 #  ----------------------------------------------------------------
-
 @app.route('/venues/create', methods=['GET'])
 def create_venue_form():
   form = VenueForm()
@@ -448,7 +367,6 @@ def create_venue_form():
 def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   form = VenueForm()
-  print(form.data, file=sys.stderr)
   error = False
   body = {}
 
@@ -457,19 +375,9 @@ def create_venue_submission():
                   genres=form.genres.data, facebook_link=form.facebook_link.data, address=form.address.data, 
                   image_link=form.image_link.data, website_link=form.website_link.data, seeking_talent=form.seeking_talent.data,
                   seeking_descriptions=form.seeking_description.data)
-    print('Venue form created.', file=sys.stderr)
-    print(venue, file=sys.stderr)
+
     db.session.add(venue)
     db.session.commit()
-    #body['venue_id'] = Venue.venue_id
-    body['name'] = Venue.name
-    body['city'] = Venue.city
-    body['state'] = Venue.state
-    body['address'] = Venue.address
-    body['phone'] = Venue.phone
-    body['image_link'] = Venue.image_link
-    body['facebook_link'] = Venue.facebook_link
-    print(body, file=sys.stderr)
 
     flash('Venue ' + request.form['name'] + ' was successfully listed!')
   except:
@@ -494,8 +402,8 @@ def delete_venue(venue_id):
   # TODO: Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
   error = False
+
   try:
-      #Todo.query.filter_by(id=todo_id).delete()
       venue = Venue.query.get(venue_id)
       db.session.delete(venue)
       db.session.commit()
@@ -521,21 +429,9 @@ def delete_venue(venue_id):
 def artists():
   # TODO: replace with real data returned from querying the database
   artists = Artist.query.distinct().order_by('name').all()
-  print(artists, file=sys.stderr)
-  
-  #active_list = Artist.query.get(artist_id)
-  #print(artists[2].name, file=sys.stderr)
-  #print(active_list, file=sys.stderr)
-  data1 = []
-  data = [{"id": artists[i].artist_id, "name": artists[i].name} for i in range(len(artists))]
-  """for i in range(len(artists)):
-    print(artists[i].artist_id , file=sys.stderr)
-    print(artists[i].name, file=sys.stderr)
-    data1.append({"id": artists[i].artist_id , "name": artists[i].name})
-    data1['id'] = artists[i].artist_id 
-    data1['name'] = artists[i].name"""
 
-  #print(data, file=sys.stderr)
+  data = [{"id": artists[i].artist_id, "name": artists[i].name} for i in range(len(artists))]
+
   """#data=[{
     "id": 1,
     "name": "Guns N Petals",
@@ -550,8 +446,6 @@ def artists():
   "name": "The Wild Sax Band"
   }
   ]"""
-  #data = data1
-  #print(len(data), file=sys.stderr)
   return render_template('pages/artists.html', artists=data)
 
 @app.route('/artists/search', methods=['POST'])
@@ -562,24 +456,19 @@ def search_artists():
   x = datetime.now()
 
   search_term=request.form.get('search_term', '').lower()
-  print(search_term, file=sys.stderr)
   artists = Artist.query.distinct().all()
-  print(artists[0], file=sys.stderr)
   count = 0
   data = []
+
   for i in artists:
     if search_term in (i.name).lower():
       new_dict = {}
-      print(i.name, file=sys.stderr)
-      print(i.artist_id, file=sys.stderr)
       new_dict['id'] = i.artist_id
       new_dict['name'] = i.name
       new_dict['num_upcoming_shows'] = Artist.query.join(Show).where(Show.artist_id == i.artist_id).where(Show.start_time > x).count()
       data.append(new_dict)
-      #upcoming_shows = Artist.query.join(Show).where(Show.artist_id == i.artist_id).where(Show.start_time > x).all()
       count += 1 
-  #print(upcoming_shows, file=sys.stderr)
-  print(data, file=sys.stderr)
+
   response={
     "count": count,
     "data": data
@@ -591,11 +480,9 @@ def show_artist(artist_id):
   # shows the artist page with the given artist_id
   # TODO: replace with real artist data from the artist table, using artist_id
   x = datetime.now()
-
   artists = Artist.query.distinct().all()
-  print(artists, file=sys.stderr)
+
   
-  #print(venues, file=sys.stderr)
   artist_list = []
   for i in artists:
     artist_dict = {}
@@ -612,31 +499,22 @@ def show_artist(artist_id):
     artist_dict['seeking_descriptions'] = i.seeking_descriptions
     artist_dict['image_link'] = i.image_link
 
-    #past_artist_shows = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time < x).all()
     past_show_shows = Show.query.join(Venue, Show.venue_id == Venue.venue_id).join(Artist, Artist.artist_id == Show.artist_id).where(Show.artist_id == i.artist_id).where(Show.start_time < x).order_by('start_time').all()
-    #number_of_past_shows = len(upcoming_shows)
-    print(past_show_shows, file=sys.stderr)
-
-    #upcoming_artist_shows = Artist.query.join(Show, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time > x).all()
     upcoming_show_shows = Show.query.join(Venue, Show.venue_id == Venue.venue_id).join(Artist, Artist.artist_id == Show.artist_id).where(Show.artist_id == i.artist_id).where(Show.start_time > x).order_by('start_time').all()
-    #upcoming_show_shows = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == i.venue_id).where(Show.start_time > x).all()
-    #number_of_upcoming_shows = len(upcoming_artist_shows)
-    #print(number_of_upcoming_shows, file=sys.stderr)
-    past_show = []
     
+    past_show = []
     past_count = 0
+
     for j in past_show_shows:
       past_dict = {}
       venue = Venue.query.join(Show, Show.venue_id == Venue.venue_id).where(Show.venue_id == j.venue_id).one_or_none()
       past_dict['venue_id'] = venue.venue_id
       past_dict['venue_name'] = venue.name
       past_dict['venue_image_link'] = venue.image_link
-      past_show_show = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == j.venue_id).where(Show.artist_id == j.artist_id).where(Show.start_time < x).all()
-      
+     
       if len(past_show_shows) != 0:
         show_list = [i.start_time for i in past_show_shows]
 
-      print(show_list,  file=sys.stderr)
       if len(show_list) != 0:
         past_dict['start_time'] = show_list[past_count].strftime('%Y-%m-%dT%H:%M:%SZ')
       past_count += 1
@@ -644,26 +522,21 @@ def show_artist(artist_id):
     
     artist_dict['past_shows'] = past_show
     artist_dict['past_shows_count'] = len(past_show)
-    #print(venue_dict,  file=sys.stderr)
-    #artist_list.append(artist_dict)
     
     upcoming_show = []
-    
     upcoming_count = 0
+
     for j in upcoming_show_shows:
       upcoming_dict = {}
       venue = Venue.query.join(Show, Show.venue_id == Venue.venue_id).where(Show.venue_id == j.venue_id).one_or_none()
       upcoming_dict['venue_id'] = venue.venue_id
       upcoming_dict['venue_name'] = venue.name
       upcoming_dict['venue_image_link'] = venue.image_link
-      upcoming_show_show = Show.query.join(Artist, Show.artist_id == Artist.artist_id).where(Show.venue_id == j.venue_id).where(Show.artist_id == j.artist_id).where(Show.start_time > x).all()
-      print(upcoming_show_show, file=sys.stderr)
-
+      
       if len(upcoming_show_shows) != 0:
         upcoming_show_list = [j.start_time for j in upcoming_show_shows]
 
-      print(upcoming_show_list,  file=sys.stderr)
-      if len(upcoming_show_list) != 0: #2019-06-15T23:00:00.000Z
+      if len(upcoming_show_list) != 0:
         upcoming_dict['start_time'] = upcoming_show_list[upcoming_count].strftime('%Y-%m-%dT%H:%M:%SZ')
       upcoming_count += 1
         
@@ -748,42 +621,14 @@ def show_artist(artist_id):
     "past_shows_count": 0,
     "upcoming_shows_count": 3,
   }"""
-
   data = list(filter(lambda d: d['id'] == artist_id, artist_list))[0]
   return render_template('pages/show_artist.html', artist=data)
-  #return 'Hello'
+
 #  Update
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
   form = ArtistForm()
-  #error = False
-  #print(form, file=sys.stderr)
-  #try:
-    
-    #artist = Artist(name=form.name.data, city=form.city.data,
-     #             state=form.state.data, phone=form.phone.data, genres=form.genres.data, 
-      #            image_link=form.image_link.data, facebook_link=form.facebook_link.data)
-    #print('Artist form created.', file=sys.stderr)
-    
-    #db.session.add(venue)
-    #db.session.commit()
-      #complete = request.get_json()['complete']
-   # artist = Artist.query.get(artist_id)
-    #print('artist: ', artist)
-      #todo.complete = complete
-      #db.session.commit()
-  #except():
-   #   db.session.rollback()
-    #  error = True
-     # print(sys.exc_info())
-  #finally:
-   #   db.session.close()
-  #if error:
-   #   abort(500)
-  #else:
-   # return redirect(url_for('index'))
-
   artist_query = Artist.query.filter(Artist.artist_id == artist_id).one_or_none()
 
   artist = {}
@@ -808,21 +653,14 @@ def edit_artist_submission(artist_id):
   # artist record with ID <artist_id> using the new attributes
   form = ArtistForm()
   error = False
-  #print(form.data, file=sys.stderr)
-  print("artist_id:{}".format(artist_id), file=sys.stderr)
+
   try:
     
     artist_form = Artist(name=form.name.data, city=form.city.data, state=form.state.data,
                     phone=form.phone.data, genres=form.genres.data, facebook_link=form.facebook_link.data, 
                     image_link=form.image_link.data, website_link=form.website_link.data, seeking_venues=form.seeking_venue.data, 
                     seeking_descriptions=form.seeking_description.data)
-    print('Artist form created.', file=sys.stderr)
-    #print(artist_form, file=sys.stderr)
-    #print(type(artist_form), file=sys.stderr)
-    
-    #db.session.add(venue)
-    #db.session.commit()
-      #complete = request.get_json()['complete']
+
     
     artist = Artist.query.get(artist_id)
     if artist_form.name != None:
@@ -856,9 +694,7 @@ def edit_artist_submission(artist_id):
       artist.seeking_descriptions = artist_form.seeking_descriptions
 
     db.session.commit()
-        
     flash("Updated user '{}'".format(artist.name))
-    #db.session.commit()
         
   except:
       db.session.rollback()
@@ -868,16 +704,12 @@ def edit_artist_submission(artist_id):
       db.session.close()
   if error:
       abort(500)
-  #else:
-   # return redirect(url_for('index'))
-  
-  #return 'Done'
+
   return redirect(url_for('show_artist', artist_id=artist_id))
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
   form = VenueForm()
-  print(form, file=sys.stderr)
   venue_query = Venue.query.filter(Venue.venue_id == venue_id).one_or_none()
 
   venue = {}
@@ -893,7 +725,6 @@ def edit_venue(venue_id):
   venue['seeking_talent'] = venue_query.seeking_talent
   venue['seeking_description'] = venue_query.seeking_descriptions
   venue['image_link'] = venue_query.image_link 
-  print("Venue dictionary: {}".format(venue), file=sys.stderr)
 
   """venue={
     "id": 1,
@@ -918,14 +749,14 @@ def edit_venue_submission(venue_id):
   # venue record with ID <venue_id> using the new attributes
   form = VenueForm()
   error = False
-  print(form.data, file=sys.stderr)
+
   try:
     
     venue_form = Venue(name=form.name.data, city=form.city.data, state=form.state.data,
                   genres=form.genres.data, facebook_link=form.facebook_link.data, address=form.address.data, 
                   image_link=form.image_link.data, website_link=form.website_link.data, seeking_talent=form.seeking_talent.data,
                   seeking_descriptions=form.seeking_description.data)
-    print('Venue form created.', file=sys.stderr)
+
     venue = Venue.query.get(venue_id)
 
     if venue_form.name != None:
@@ -964,7 +795,6 @@ def edit_venue_submission(venue_id):
     db.session.commit()
         
     flash("{} has been updated.'".format(venue.name))
-    #db.session.commit()
         
   except:
       db.session.rollback()
@@ -988,17 +818,15 @@ def create_artist_form():
 def create_artist_submission():
   # called upon submitting the new artist listing form
   form = ArtistForm()
-  print(form.data, file=sys.stderr)
   error = False
   body = {}
+
   try:
     artist = Artist(name=form.name.data, city=form.city.data, state=form.state.data,
                     phone=form.phone.data, genres=form.genres.data, facebook_link=form.facebook_link.data, 
                     image_link=form.image_link.data, website_link=form.website_link.data, seeking_venues=form.seeking_venue.data, 
                     seeking_descriptions=form.seeking_description.data)
   
-    print('Artist form created.', file=sys.stderr)
-    print(artist, file=sys.stderr)
     db.session.add(artist)
     db.session.commit()
     body['name'] = Artist.name
@@ -1036,15 +864,10 @@ def shows():
   # displays list of shows at /shows
   # TODO: replace with real venues data.
   x = datetime.now()
-
   shows = Show.query.join(Artist, Artist.artist_id == Show.artist_id).join(Venue, Venue.venue_id == Show.venue_id).order_by('start_time').all()
   count = 0
-  #for i in shows:
-   # print(i, file=sys.stderr)
-    #count += 1 
-  #print(count, file=sys.stderr)
-  #print(shows, file=sys.stderr)
   data = []
+
   for i in shows:
     venue = Venue.query.filter(Venue.venue_id == i.venue_id).one_or_none()
     artist = Artist.query.join(Show, Show.artist_id == Artist.artist_id).join(Venue, Venue.venue_id == Show.venue_id).filter(Show.artist_id == i.artist_id).one_or_none()
@@ -1056,14 +879,12 @@ def shows():
     show_dict['artist_image_link'] = artist.image_link
 
     upcoming_show_show = Show.query.where(i.venue_id == venue.venue_id).where(i.artist_id == artist.artist_id).where(i.start_time > x).order_by('start_time').all()
-    print(upcoming_show_show, file=sys.stderr)
 
     if len(upcoming_show_show) != 0:
       upcoming_show_list = [j.start_time for j in upcoming_show_show]
       show_dict['start_time'] = upcoming_show_list[count].strftime("%Y-%m-%dT%H:%M:%SZ")
     
     past_show_show = Show.query.where(i.venue_id == venue.venue_id).where(i.artist_id == artist.artist_id).where(i.start_time < x).order_by('start_time').all()
-    #print(upcoming_show_show, file=sys.stderr)
 
     if len(past_show_show) != 0:
       past_show_list = [j.start_time for j in past_show_show]
@@ -1072,12 +893,6 @@ def shows():
     data.append(show_dict)
     count += 1
   
-  print(show_dict, file=sys.stderr)
-  #active_list = Artist.query.get(venue_id)
-  #print(artists[2].name, file=sys.stderr)
-  #print(active_list, file=sys.stderr)
-  #data1 = []
- #data = [{"id": shows[i].show_id, "start_time": str(shows[i].start_time)} for i in range(len(shows))]
   """data=[{
     "venue_id": 1,
     "venue_name": "The Musical Hop",
@@ -1127,14 +942,13 @@ def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
   form = ShowForm()
   count = len(Show.query.all())
-  print(count, file=sys.stderr)
   error = False
   body = {}
+
   try:
     show = Show(artist_id=form.artist_id.data, venue_id=form.venue_id.data,
                   start_time=form.start_time.data)
-    print('Show form created.', file=sys.stderr)
-    print(show, file=sys.stderr)
+
     db.session.add(show)
     db.session.commit()
     body['artist_id'] = Show.artist_id
