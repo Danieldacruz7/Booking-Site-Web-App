@@ -55,8 +55,6 @@ class Venue(db.Model):
     def __repr__(self):
         return f'<Todo ID: {self.venue_id}, name: {self.name}, city: {self.city}, state: {self.state}, address: {self.address}, phone: {self.phone}, genres: {self.genres}, image_link: {self.image_link}>, facebook_link: {self.facebook_link}, website_link: {self.website_link}, seeking_talent: {self.seeking_talent}, seeking_descriptions: {self.seeking_descriptions}>'
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
-
 class Artist(db.Model):
     __tablename__ = 'Artist'
 
@@ -75,9 +73,6 @@ class Artist(db.Model):
     def __repr__(self):
         return f'ID: {self.artist_id}, name: {self.name}, city: {self.city}, state: {self.state}, phone: {self.phone}, genres: {self.genres}, image_link: {self.image_link}>, facebook_link: {self.facebook_link}, website_link: {self.website_link}, seeking_venues: {self.seeking_venues}, seeking_descriptions: {self.seeking_descriptions}'
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
-
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 class Show(db.Model):
   __tablename__ = 'Show'
 
@@ -287,22 +282,13 @@ def create_venue_submission():
     db.session.close()
   if error:
     abort(500)
-  # TODO: modify data to be the data object returned from db insertion
 
-  # on successful db insert, flash success
-  #flash('Venue ' + request.form['name'] + ' was successfully listed!')
-  ## TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   return render_template('pages/home.html')
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
   """Deletes venue data according the venue ID. """
-  # TODO: Complete this endpoint for taking a venue_id, and using
-  # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
   error = False
-
   try:
       venue = Venue.query.get(venue_id)
       db.session.delete(venue)
@@ -452,7 +438,6 @@ def edit_artist(artist_id):
   artist['seeking_description'] = artist_query.seeking_descriptions
   artist['image_link'] = artist_query.image_link 
 
-  # TODO: populate form with fields from artist with ID <artist_id>
   return render_template('forms/edit_artist.html', form=form, artist=artist)
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
@@ -640,10 +625,6 @@ def create_artist_submission():
   if error:
     abort(500)
 
-  # on successful db insert, flash success
-  #flash('Artist ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
   return render_template('pages/home.html')
 
 
@@ -719,13 +700,7 @@ def create_show_submission():
     db.session.close()
   if error:
     abort(500)
-  # TODO: insert form data as a new Show record in the db, instead
 
-  # on successful db insert, flash success
-  #flash('Show was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Show could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   return render_template('pages/home.html')
 
 @app.errorhandler(404)
