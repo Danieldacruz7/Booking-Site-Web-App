@@ -1,5 +1,5 @@
 # Booking-Site_Web-App
-
+A web application that allows artists and venues to display upcoming and past shows at various veneues. 
 
 ## Table of Contents
 
