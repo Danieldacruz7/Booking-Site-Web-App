@@ -27,5 +27,8 @@ pip install -r requirements.txt
 
 ## File Descriptions
 
+The project includes the main progam, app.py, which is used to run the backend of the web application. 
+
 ## How to Interact with the Project
+By running the app.py program, the application will be run as a Flask application. The application can be run on a local machine or hosted on a site such as Heroku. 
 
