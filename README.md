@@ -1,6 +1,8 @@
 # Booking-Site_Web-App
 A web application that allows artists and venues to display upcoming and past shows at various veneues. 
 
+![Fyyur Home Page](./Screenshots/Fyyur%20Home%20Page.jpg)
+
 ## Table of Contents
 
 1. Project Motivation
