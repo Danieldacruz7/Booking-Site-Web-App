@@ -27,7 +27,9 @@ The required installations include:
 
 However, simply run the following command to download libraries: 
 
+```
 pip install -r requirements.txt
+```
 
 ## File Descriptions
 
