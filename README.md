@@ -5,16 +5,16 @@ A web application that allows artists and venues to display upcoming and past sh
 
 ## Table of Contents
 
-1. Project Motivation
+1. Project Description
 2. Installations
 3. File Descriptions
 4. How to Interact with the Project
 
-## Project Motivation:
+## Project Description:
 
-Fyyur is a web application that artists and venues can let the world know all the events they are taking part in. It is a convienant way for fans to see where their favorite artist will be performing. 
+Fyyur is a web application that artists and venues can let the world know all the events they are taking part in. It is a convienant way for fans to see where their favorite artist will be performing. The users of the application can add new venues, artists and shows for everyone to see. 
 
-The web application uses ORM for the backend and all changes made to the database are tracked using migrations. The frontend incorporates HTML and CSS templates for the user interface. 
+The web application uses Object-Relational Mapping (ORM) for the backend, and all changes made to the database are tracked using migrations. The frontend incorporates HTML and CSS templates for the user interface. 
 
 ## Installations:
 
